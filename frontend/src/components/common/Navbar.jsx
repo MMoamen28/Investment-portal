@@ -12,7 +12,7 @@ const HOME_PATHS = { INVESTOR: '/investor/submit', EMPLOYEE: '/employee/tasks', 
 const Navbar = () => {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
-  const { notifications, unread, markAllRead } = useNotifications();
+  const { notifications, unread, markNotificationRead, deleteNotification } = useNotifications(null, user?.role === 'INVESTOR');
 
   const handleLogout = () => { logout(); navigate('/login'); };
 
@@ -37,7 +37,14 @@ const Navbar = () => {
               <span className="text-sm text-blue-200 hidden sm:block">
                 {user.username} · <span className="text-[#c9a84c]">{ROLE_LABELS[user.role]}</span>
               </span>
-              <NotificationBell notifications={notifications} unread={unread} onRead={markAllRead} />
+              {user.role === 'INVESTOR' && (
+                <NotificationBell
+                  notifications={notifications}
+                  unread={unread}
+                  onMarkRead={markNotificationRead}
+                  onDelete={deleteNotification}
+                />
+              )}
               <Button
                 onClick={handleLogout}
                 icon={<LogoutOutlined />}

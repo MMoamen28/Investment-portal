@@ -7,8 +7,9 @@ import useAuthStore from '../../store/useAuthStore';
 
 const NAV = {
   INVESTOR: [
-    { to: '/investor/submit', icon: <FileAddOutlined />,    label: 'تقديم طلب' },
-    { to: '/investor/status', icon: <SearchOutlined />,     label: 'تتبع الطلب' },
+    { to: '/investor/submit',       icon: <FileAddOutlined />,    label: 'تقديم طلب' },
+    { to: '/investor/status',       icon: <SearchOutlined />,     label: 'تتبع الطلب' },
+    { to: '/investor/my-requests',  icon: <UnorderedListOutlined />, label: 'طلباتي' },
   ],
   EMPLOYEE: [
     { to: '/employee/tasks',        icon: <CheckSquareOutlined />, label: 'مهامي' },

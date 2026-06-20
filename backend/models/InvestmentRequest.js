@@ -1,50 +1,52 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const sequelize     = require('../config/sequelize');
 
-const InvestmentRequestSchema = new mongoose.Schema({
-  processInstanceId: { type: String, unique: true },
-  investor: {
-    fullName:   String,
-    nationalId: String,
-    email:      String,
-    phone:      String,
+const InvestmentRequest = sequelize.define('InvestmentRequest', {
+  id: {
+    type:         DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey:   true,
   },
-  company: {
-    name:     String,
-    type:     { type: String },
-    activity: String,
-    address:  String,
+  processInstanceId: {
+    type:      DataTypes.STRING,
+    unique:    true,
+    allowNull: false,
   },
-  investment: {
-    amount:   Number,
-    type:     { type: String },
-    partners: Number,
-    notes:    String,
+
+  // Nested objects stored as JSONB
+  investor:   { type: DataTypes.JSONB, defaultValue: {} },
+  company:    { type: DataTypes.JSONB, defaultValue: {} },
+  investment: { type: DataTypes.JSONB, defaultValue: {} },
+
+  riskLevel: {
+    type:   DataTypes.ENUM('LOW', 'MEDIUM', 'HIGH'),
+    allowNull: true,
   },
-  riskLevel:         { type: String, enum: ['LOW', 'MEDIUM', 'HIGH'] },
-  status:            { type: String, enum: ['IN_PROGRESS', 'APPROVED', 'REJECTED', 'ESCALATED', 'MISSING_DATA'], default: 'IN_PROGRESS' },
-  currentStage:      { type: String, default: 'SUBMITTED' },
-  approvalsReceived: { type: Number, default: 0 },
-  approvalsRequired: { type: Number, default: 0 },
-  slaDeadline:       Date,
-  slaBreached:       { type: Boolean, default: false },
-  retryCount:        { type: Number, default: 0 },
-  retryExhausted:    { type: Boolean, default: false },
+  status: {
+    type:         DataTypes.ENUM('IN_PROGRESS', 'APPROVED', 'REJECTED', 'ESCALATED', 'MISSING_DATA'),
+    defaultValue: 'IN_PROGRESS',
+  },
+  currentStage:       { type: DataTypes.STRING,  defaultValue: 'SUBMITTED' },
+  approvalsReceived:  { type: DataTypes.INTEGER, defaultValue: 0 },
+  approvalsRequired:  { type: DataTypes.INTEGER, defaultValue: 0 },
+  rejectionsReceived: { type: DataTypes.INTEGER, defaultValue: 0 },
+  slaDeadline:        { type: DataTypes.DATE },
+  slaBreached:       { type: DataTypes.BOOLEAN, defaultValue: false },
+  retryCount:        { type: DataTypes.INTEGER, defaultValue: 0 },
+  retryExhausted:    { type: DataTypes.BOOLEAN, defaultValue: false },
+
+  // JSONB for nested status objects
   verificationStatus: {
-    nationalId:   { type: String, enum: ['PENDING', 'VERIFIED', 'FAILED'], default: 'PENDING' },
-    taxClearance: { type: String, enum: ['PENDING', 'VERIFIED', 'FAILED'], default: 'PENDING' },
+    type:         DataTypes.JSONB,
+    defaultValue: { nationalId: 'PENDING', taxClearance: 'PENDING' },
   },
-  history: [{
-    stage:     String,
-    timestamp: Date,
-    note:      String,
-    actor:     String,
-  }],
-  notifications: [{
-    type:    { type: String },
-    channel: String,
-    sentAt:  Date,
-    status:  String,
-  }],
-}, { timestamps: true });
 
-module.exports = mongoose.model('InvestmentRequest', InvestmentRequestSchema);
+  // JSONB arrays
+  history:       { type: DataTypes.JSONB, defaultValue: [] },
+  notifications: { type: DataTypes.JSONB, defaultValue: [] },
+}, {
+  tableName:  'investment_requests',
+  timestamps: true,
+});
+
+module.exports = InvestmentRequest;

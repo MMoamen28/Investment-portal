@@ -1,18 +1,37 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const sequelize     = require('../config/sequelize');
 
-const TaskSchema = new mongoose.Schema({
-  taskId:            { type: String, unique: true },
-  processInstanceId: String,
-  taskName:          String,
-  assignedGroup:     String,
-  claimedBy:         String,
-  status:            { type: String, enum: ['AVAILABLE', 'CLAIMED', 'COMPLETED'], default: 'AVAILABLE' },
-  decision:          { type: String, enum: ['APPROVED', 'REJECTED', 'MISSING_DATA'] },
-  missingFields:     [String],
-  rejectionReason:   String,
-  slaDeadline:       Date,
-  slaBreached:       { type: Boolean, default: false },
-  completedAt:       Date,
-}, { timestamps: true });
+const Task = sequelize.define('Task', {
+  id: {
+    type:         DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey:   true,
+  },
+  taskId: {
+    type:      DataTypes.STRING,
+    unique:    true,
+    allowNull: false,
+  },
+  processInstanceId: { type: DataTypes.STRING },
+  taskName:          { type: DataTypes.STRING },
+  assignedGroup:     { type: DataTypes.STRING },
+  claimedBy:         { type: DataTypes.STRING },
+  status: {
+    type:         DataTypes.ENUM('AVAILABLE', 'CLAIMED', 'COMPLETED'),
+    defaultValue: 'AVAILABLE',
+  },
+  decision: {
+    type: DataTypes.ENUM('APPROVED', 'REJECTED', 'MISSING_DATA'),
+    allowNull: true,
+  },
+  missingFields:   { type: DataTypes.ARRAY(DataTypes.TEXT), defaultValue: [] },
+  rejectionReason: { type: DataTypes.TEXT },
+  slaDeadline:     { type: DataTypes.DATE },
+  slaBreached:     { type: DataTypes.BOOLEAN, defaultValue: false },
+  completedAt:     { type: DataTypes.DATE },
+}, {
+  tableName:  'tasks',
+  timestamps: true,
+});
 
-module.exports = mongoose.model('Task', TaskSchema);
+module.exports = Task;

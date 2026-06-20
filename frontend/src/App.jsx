@@ -9,6 +9,7 @@ import ProtectedRoute from './components/common/ProtectedRoute';
 import LoginPage        from './pages/LoginPage';
 import SubmitPage       from './pages/investor/SubmitPage';
 import StatusPage       from './pages/investor/StatusPage';
+import MyRequestsPage   from './pages/investor/MyRequestsPage';
 import TasksPage        from './pages/employee/TasksPage';
 import MissingDataPage  from './pages/employee/MissingDataPage';
 import DashboardPage    from './pages/manager/DashboardPage';
@@ -50,6 +51,7 @@ const App = () => (
         <Route element={<ProtectedRoute roles={['INVESTOR']}><Layout /></ProtectedRoute>}>
           <Route path="/investor/submit" element={<SubmitPage />} />
           <Route path="/investor/status" element={<StatusPage />} />
+          <Route path="/investor/my-requests" element={<MyRequestsPage />} />
         </Route>
 
         {/* Employee */}

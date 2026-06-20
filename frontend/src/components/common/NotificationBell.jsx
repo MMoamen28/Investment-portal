@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Badge, Popover, List, Empty, Tag } from 'antd';
-import { BellOutlined } from '@ant-design/icons';
+import { Badge, Popover, List, Empty, Tag, Button, Space } from 'antd';
+import { BellOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons';
 
 const TYPE_LABELS = {
   APPROVAL:     { label: 'موافقة',         color: 'green'  },
@@ -9,7 +9,7 @@ const TYPE_LABELS = {
   ESCALATION:   { label: 'تصعيد',          color: 'purple' },
 };
 
-const NotificationBell = ({ notifications = [], unread = 0, onRead }) => {
+const NotificationBell = ({ notifications = [], unread = 0, onRead, onMarkRead, onDelete }) => {
   const [open, setOpen] = useState(false);
 
   const content = (
@@ -22,15 +22,36 @@ const NotificationBell = ({ notifications = [], unread = 0, onRead }) => {
           size="small"
           renderItem={(n) => {
             const cfg = TYPE_LABELS[n.type] || { label: n.type, color: 'default' };
+            const isRead = n.status === 'READ';
             return (
-              <List.Item className="flex justify-between">
-                <div>
+              <List.Item className="flex justify-between gap-3 items-start">
+                <div className="min-w-0">
                   <Tag color={cfg.color}>{cfg.label}</Tag>
+                  {isRead && <Tag color="default">مقروء</Tag>}
+                  <div className="text-xs text-gray-700 mt-1 truncate max-w-[16rem]">
+                    {n.message || n.channel}
+                  </div>
                   <span className="text-xs text-gray-500 block mt-0.5">
                     {new Date(n.sentAt).toLocaleString('ar-EG')}
                   </span>
                 </div>
-                <span className="text-xs text-gray-400">{n.channel}</span>
+                <Space size={4} className="shrink-0">
+                  {!isRead && (
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<CheckOutlined />}
+                      onClick={() => onMarkRead?.(n.id)}
+                    />
+                  )}
+                  <Button
+                    type="text"
+                    danger
+                    size="small"
+                    icon={<CloseOutlined />}
+                    onClick={() => onDelete?.(n.id)}
+                  />
+                </Space>
               </List.Item>
             );
           }}

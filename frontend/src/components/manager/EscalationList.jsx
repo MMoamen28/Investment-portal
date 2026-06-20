@@ -1,17 +1,8 @@
-import { Table, Tag, Button, Popconfirm, message } from 'antd';
-import { WarningOutlined } from '@ant-design/icons';
+import { Table, Tag, Button, Popconfirm } from 'antd';
+import { WarningOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
 import RiskBadge from '../common/RiskBadge';
-import api from '../../services/api';
 
-const EscalationList = ({ data = [], loading, onRefresh }) => {
-  const forceDecision = async (id, decision) => {
-    try {
-      await api.post(`/tasks/TASK-${id}-G1/complete`, { decision });
-      message.success(`تم ${decision === 'APPROVED' ? 'الموافقة' : 'الرفض'} بنجاح`);
-      onRefresh?.();
-    } catch { message.error('فشل تنفيذ القرار'); }
-  };
-
+const EscalationList = ({ data = [], loading, onDelete, onOpen }) => {
   const columns = [
     { title: 'المستثمر', dataIndex: ['investor', 'fullName'] },
     { title: 'المخاطرة', dataIndex: 'riskLevel', render: (v) => <RiskBadge level={v} size="sm" /> },
@@ -28,15 +19,17 @@ const EscalationList = ({ data = [], loading, onRefresh }) => {
       render: (v) => v ? new Date(v).toLocaleString('ar-EG') : '—',
     },
     {
-      title: 'الإجراءات', width: 220,
+      title: 'الإجراءات', width: 100,
       render: (_, r) => (
         <div className="flex gap-2">
-          <Popconfirm title="هل تريد الموافقة القسرية؟" onConfirm={() => forceDecision(r.processInstanceId, 'APPROVED')} okText="نعم" cancelText="لا">
-            <Button size="small" style={{ background: '#16a34a', color: '#fff', borderColor: '#16a34a' }}>موافقة قسرية</Button>
-          </Popconfirm>
-          <Popconfirm title="هل تريد الرفض القسري؟" onConfirm={() => forceDecision(r.processInstanceId, 'REJECTED')} okText="نعم" cancelText="لا">
-            <Button size="small" danger>رفض قسري</Button>
-          </Popconfirm>
+          <Button size="small" icon={<EyeOutlined />} onClick={() => onOpen?.(r)}>
+            فتح
+          </Button>
+          {onDelete && (
+            <Popconfirm title="هل أنت متأكد من الحذف؟" onConfirm={() => onDelete(r.processInstanceId)} okText="نعم" cancelText="لا">
+              <Button size="small" type="text" danger icon={<DeleteOutlined />} />
+            </Popconfirm>
+          )}
         </div>
       ),
     },

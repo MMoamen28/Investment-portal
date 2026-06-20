@@ -3,6 +3,7 @@ import { Card, Input, Select, DatePicker, Button, Alert } from 'antd';
 import { SearchOutlined, ReloadOutlined } from '@ant-design/icons';
 import RequestsTable from '../../components/manager/RequestsTable';
 import api from '../../services/api';
+import { message } from 'antd';
 
 const { RangePicker } = DatePicker;
 
@@ -34,6 +35,16 @@ const RequestsPage = () => {
 
   useEffect(() => { fetchData(1); }, []);
 
+  const handleDelete = async (id) => {
+    try {
+      await api.delete(`/investment/${id}`);
+      message.success('تم الحذف بنجاح');
+      fetchData(pagination.current);
+    } catch (err) {
+      message.error(err.response?.data?.message || 'فشل الحذف');
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -61,7 +72,6 @@ const RequestsPage = () => {
               { value: 'IN_PROGRESS',  label: 'قيد المعالجة' },
               { value: 'APPROVED',     label: 'موافق عليه'   },
               { value: 'REJECTED',     label: 'مرفوض'        },
-              { value: 'ESCALATED',    label: 'مُصعَّد'       },
               { value: 'MISSING_DATA', label: 'بيانات ناقصة' },
             ]}
           />
@@ -95,6 +105,7 @@ const RequestsPage = () => {
           loading={loading}
           pagination={{ ...pagination, total, showSizeChanger: false }}
           onChange={(pag) => fetchData(pag.current)}
+          onDelete={handleDelete}
         />
         <div className="text-xs text-gray-400 mt-2">إجمالي: {total} طلب</div>
       </Card>

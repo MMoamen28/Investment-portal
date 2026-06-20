@@ -37,9 +37,6 @@ const Step3Investment = () => (
     <Form.Item name={['investment', 'notes']} label="ملاحظات إضافية">
       <Input.TextArea rows={3} placeholder="أي معلومات إضافية تريد إضافتها..." />
     </Form.Item>
-    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800">
-      <strong>ملاحظة:</strong> أقل من 500,000 جنيه → موافقة تلقائية | أقل من 5,000,000 → متوسط (24 ساعة) | أكثر من ذلك → مرتفع (48 ساعة)
-    </div>
   </div>
 );
 

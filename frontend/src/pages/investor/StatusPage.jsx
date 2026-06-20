@@ -76,7 +76,7 @@ const StatusPage = () => {
                 {STATUS_LABELS[data.status]?.label || data.status}
               </Tag>
               <RiskBadge level={data.riskLevel} />
-              <SLATimer deadline={data.slaDeadline} breached={data.slaBreached} />
+              <SLATimer deadline={data.slaDeadline} breached={data.slaBreached} status={data.status} />
               <RetryIndicator retryCount={data.retryCount} retryExhausted={data.retryExhausted} />
               {data.slaBreached && (
                 <Tag color="red">تم التصعيد</Tag>
@@ -133,9 +133,14 @@ const StatusPage = () => {
             <Card className="shadow-sm" title={<><BellOutlined className="ml-2" />الإشعارات</>}>
               <div className="space-y-2">
                 {[...data.notifications].reverse().map((n, i) => (
-                  <div key={i} className="flex justify-between items-center p-2 bg-gray-50 rounded text-sm">
-                    <span className="font-medium">{n.type} — {n.channel}</span>
-                    <span className="text-gray-400 text-xs">{new Date(n.sentAt).toLocaleString('ar-EG')}</span>
+                  <div key={i} className="flex flex-col p-3 bg-gray-50 rounded border border-gray-100">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="font-semibold text-[#1e3a5f] text-sm">رسالة عبر {n.channel === 'SMS' ? 'الجوال (SMS)' : 'البريد الإلكتروني'}</span>
+                      <span className="text-gray-400 text-xs">{new Date(n.sentAt).toLocaleString('ar-EG')}</span>
+                    </div>
+                    <div className="text-gray-700 text-sm">
+                      {n.message || (n.type === 'APPROVAL' ? 'تمت الموافقة' : n.type === 'REJECTION' ? 'تم الرفض' : n.type)}
+                    </div>
                   </div>
                 ))}
               </div>

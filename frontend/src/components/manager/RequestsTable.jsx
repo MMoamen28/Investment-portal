@@ -1,5 +1,5 @@
-import { Table, Tag, Button } from 'antd';
-import { EyeOutlined } from '@ant-design/icons';
+import { Table, Tag, Button, Popconfirm } from 'antd';
+import { EyeOutlined, DeleteOutlined } from '@ant-design/icons';
 import RiskBadge from '../common/RiskBadge';
 import SLATimer from '../common/SLATimer';
 
@@ -19,7 +19,7 @@ const STATUS_LABEL = {
   MISSING_DATA: 'بيانات ناقصة',
 };
 
-const RequestsTable = ({ data = [], loading, pagination, onChange }) => {
+const RequestsTable = ({ data = [], loading, pagination, onChange, onDelete }) => {
   const columns = [
     { title: 'رقم الطلب', dataIndex: 'processInstanceId', width: 160, render: (v) => <span className="text-xs font-mono">{v}</span> },
     { title: 'المستثمر',  dataIndex: ['investor', 'fullName'], width: 140 },
@@ -34,12 +34,31 @@ const RequestsTable = ({ data = [], loading, pagination, onChange }) => {
       title: 'الحالة', dataIndex: 'status', width: 120,
       render: (v) => <Tag color={STATUS_COLOR[v]}>{STATUS_LABEL[v] || v}</Tag>,
     },
-    { title: 'الميعاد النهائي', dataIndex: 'slaDeadline', width: 150, render: (v, r) => <SLATimer deadline={v} breached={r.slaBreached} /> },
+    { title: 'الميعاد النهائي', dataIndex: 'slaDeadline', width: 150, render: (v, r) => <SLATimer deadline={v} breached={r.slaBreached} status={r.status} /> },
     {
       title: 'تاريخ التقديم', dataIndex: 'createdAt', width: 120,
       render: (v) => new Date(v).toLocaleDateString('ar-EG'),
     },
   ];
+
+  if (onDelete) {
+    columns.push({
+      title: 'إجراء',
+      key: 'action',
+      width: 80,
+      fixed: 'right',
+      render: (_, r) => (
+        <Popconfirm
+          title="هل أنت متأكد من حذف هذا الطلب؟"
+          onConfirm={() => onDelete(r.processInstanceId)}
+          okText="نعم"
+          cancelText="لا"
+        >
+          <Button type="text" danger icon={<DeleteOutlined />} />
+        </Popconfirm>
+      )
+    });
+  }
 
   return (
     <Table

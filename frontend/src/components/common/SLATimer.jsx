@@ -9,7 +9,7 @@ const fmt = (s) => {
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
 };
 
-const SLATimer = ({ deadline, breached }) => {
+const SLATimer = ({ deadline, breached, status }) => {
   const [remaining, setRemaining] = useState(0);
   const ref = useRef(null);
 
@@ -21,6 +21,11 @@ const SLATimer = ({ deadline, breached }) => {
     return () => clearInterval(ref.current);
   }, [deadline]);
 
+  // Show "مكتمل" for completed statuses (including LOW risk with no deadline)
+  if (status === 'APPROVED' || status === 'REJECTED' || status === 'DONE' || status === 'ACCEPTED') {
+    return <span className="text-gray-400 text-xs">مكتمل</span>;
+  }
+  
   if (!deadline) return null;
 
   const urgent  = remaining < 3600 && remaining > 0;

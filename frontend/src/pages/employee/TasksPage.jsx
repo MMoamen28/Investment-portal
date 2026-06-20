@@ -45,6 +45,7 @@ const TasksPage = () => {
   };
 
   const filtered = tasks.filter((t) => {
+    if (t.slaBreached || t.status === 'ESCALATED') return false;
     const matchSearch = !search || t.investorName?.includes(search) || t.taskId?.includes(search);
     const matchStatus = !statusFilter || t.status === statusFilter;
     return matchSearch && matchStatus;
