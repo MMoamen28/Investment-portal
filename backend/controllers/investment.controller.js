@@ -9,6 +9,7 @@ const {
   verifyTaxClearance,
   registerCompany,
 } = require('../services/external.service');
+const { triggerFlowableRegistrationFlow } = require('../services/flowable-registration.service');
 
 /* ────────────────── Risk Evaluation (Drools-equivalent rule) ────────────────── */
 const getRisk = (amount) => {
@@ -76,15 +77,7 @@ const runParallelVerification = async (processInstanceId, investor) => {
     request.currentStage = 'AUTO_APPROVED';
 
     setTimeout(async () => {
-      try {
-        await registerCompany({ processInstanceId, company: request.company, investment: request.investment });
-        const req_ = await InvestmentRequest.findOne({ where: { processInstanceId } });
-        if (req_) {
-          pushHistory(req_, { stage: 'COMPANY_REGISTERED', note: 'تم تسجيل الشركة تلقائياً', actor: 'System' });
-          req_.changed('history', true);
-          await req_.save();
-        }
-      } catch { /* silent */ }
+      await triggerFlowableRegistrationFlow(processInstanceId, request.company, request.investment);
     }, 2_000);
 
     await publishEvent('investment.notification.approval', { processInstanceId });
@@ -329,21 +322,7 @@ const decideEscalation = async (req, res) => {
       await request.save();
 
       setTimeout(async () => {
-        try {
-          await registerCompany({
-            processInstanceId: request.processInstanceId,
-            company: request.company,
-            investment: request.investment,
-          });
-          const updated = await InvestmentRequest.findOne({ where: { processInstanceId: request.processInstanceId } });
-          if (updated) {
-            pushHistory(updated, { stage: 'COMPANY_REGISTERED', note: 'تم تسجيل الشركة بعد موافقة المدير', actor: 'System' });
-            updated.changed('history', true);
-            await updated.save();
-          }
-        } catch (err) {
-          console.error('Company registration failed:', err.message);
-        }
+        await triggerFlowableRegistrationFlow(request.processInstanceId, request.company, request.investment);
       }, 3_000);
 
       await publishEvent('investment.notification.approval', { processInstanceId: request.processInstanceId });
@@ -425,15 +404,7 @@ const completeData = async (req, res) => {
       request.approvalsRequired = 0;
 
       setTimeout(async () => {
-        try {
-          await registerCompany({ processInstanceId: req.params.id, company: request.company, investment: request.investment });
-          const req_ = await InvestmentRequest.findOne({ where: { processInstanceId: req.params.id } });
-          if (req_) {
-            pushHistory(req_, { stage: 'COMPANY_REGISTERED', note: 'تم تسجيل الشركة تلقائياً (بعد استكمال البيانات)', actor: 'System' });
-            req_.changed('history', true);
-            await req_.save();
-          }
-        } catch { /* silent */ }
+        await triggerFlowableRegistrationFlow(req.params.id, request.company, request.investment);
       }, 2_000);
 
       await publishEvent('investment.notification.approval', { processInstanceId: req.params.id });

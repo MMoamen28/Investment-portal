@@ -8,7 +8,7 @@ E-Government Investment & Company Establishment Portal for Egypt.
 |-------|-----------|
 | Frontend | React 18 + Vite + Tailwind CSS + Ant Design |
 | Backend | Node.js + Express |
-| Database | MongoDB Community Edition (Local) |
+| Database | PostgreSQL 16 (Containerized) |
 | Workflow | jBPM + Drools (mock-ready) |
 | Messaging | Apache Kafka (mock-ready) |
 
@@ -16,13 +16,13 @@ E-Government Investment & Company Establishment Portal for Egypt.
 
 ### Prerequisites
 - Node.js 18+
-- MongoDB Community Edition running locally
+- PostgreSQL running via Docker
 - (Optional) Apache Kafka on localhost:9092
 - (Optional) jBPM Kie Server on localhost:8080
 
-### 1. Start MongoDB
+### 1. Start PostgreSQL (via Docker)
 ```bash
-mongod --dbpath /data/db
+docker compose up -d postgres
 ```
 
 ### 2. Backend
@@ -90,12 +90,12 @@ POST /api/tasks/:id/claim
 POST /api/tasks/:id/complete
 ```
 
-## MongoDB (Local)
-Connection: `mongodb://localhost:27017/investment_portal`
+## PostgreSQL (Local)
+Connection: `postgresql://postgres:postgres@localhost:5432/investment_portal`
 
-Collections: `investment_requests`, `users`, `tasks`, `audit_logs`
+Tables: `investment_requests`, `users`, `tasks`, `audit_logs`
 
-Use **MongoDB Compass** to inspect data during development.
+Use **pgAdmin** or **DBeaver** to inspect data during development.
 
 ## Colors
 - Primary: `#1e3a5f` (Deep Blue)

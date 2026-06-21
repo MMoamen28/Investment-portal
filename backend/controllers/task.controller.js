@@ -2,7 +2,7 @@ const Task              = require('../models/Task');
 const InvestmentRequest = require('../models/InvestmentRequest');
 const AuditLog          = require('../models/AuditLog');
 const { publishEvent }  = require('../services/kafka.service');
-const { registerCompany } = require('../services/external.service');
+const { triggerFlowableRegistrationFlow } = require('../services/flowable-registration.service');
 
 /* ────────────────── Helper ────────────────── */
 const pushHistory = (request, entry) => {
@@ -129,23 +129,9 @@ const completeTask = async (req, res) => {
           request.changed('history', true);
           await request.save();
 
-          // §4.5: Company Registration via REST API integration
+          // §4.5: Company Registration via Flowable API integration
           setTimeout(async () => {
-            try {
-              await registerCompany({
-                processInstanceId: request.processInstanceId,
-                company:           request.company,
-                investment:        request.investment,
-              });
-              const updated = await InvestmentRequest.findOne({ where: { processInstanceId: request.processInstanceId } });
-              if (updated) {
-                pushHistory(updated, { stage: 'COMPANY_REGISTERED', note: 'تم تسجيل الشركة في السجل التجاري', actor: 'System' });
-                updated.changed('history', true);
-                await updated.save();
-              }
-            } catch (err) {
-              console.error('Company registration failed:', err.message);
-            }
+            await triggerFlowableRegistrationFlow(request.processInstanceId, request.company, request.investment);
           }, 3_000);
 
           // Send notification to investor only when fully approved

@@ -14,6 +14,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./postgres-init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test:     ["CMD-SHELL", "pg_isready -U postgres -d investment_portal"]
       interval: 10s
@@ -61,6 +62,22 @@ services:
       retries:  10
       start_period: 45s
 
+  # ─────────────── Flowable UI ───────────────
+  flowable:
+    image: flowable/flowable-ui:latest
+    container_name: investment_flowable
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_DRIVER-CLASS-NAME=org.postgresql.Driver
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/flowable_db
+      - SPRING_DATASOURCE_USERNAME=flowable
+      - SPRING_DATASOURCE_PASSWORD=flowable
+
   # ─────────────── Backend (Node.js) ───────────────
   backend:
     build:
@@ -92,7 +109,9 @@ services:
       # Kafka (use internal listener)
       KAFKA_BROKERS: kafka:29092
 
-      JBPM_URL:     http://localhost:8080/kie-server/services/rest/server
+      FLOWABLE_BASE_URL:            http://flowable:8080/flowable-ui/process-api
+      FLOWABLE_REST_ADMIN_USER:     admin
+      FLOWABLE_REST_ADMIN_PASSWORD: test
     healthcheck:
       test:     ["CMD-SHELL", "wget -qO- http://localhost:5000/api/health || exit 1"]
       interval: 15s

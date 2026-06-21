@@ -1,30 +1,25 @@
 const request = require('supertest');
-const mongoose = require('mongoose');
-const { MongoMemoryServer } = require('mongodb-memory-server');
+const sequelize = require('../config/sequelize');
 const app = require('../server');
 const User = require('../models/User');
 const InvestmentRequest = require('../models/InvestmentRequest');
 const Task = require('../models/Task');
 const AuditLog = require('../models/AuditLog');
 
-let mongoServer;
-
 beforeAll(async () => {
-  mongoServer = await MongoMemoryServer.create();
-  const uri = mongoServer.getUri();
-  await mongoose.connect(uri);
+  await sequelize.authenticate();
+  await sequelize.sync({ force: true });
 });
 
 afterAll(async () => {
-  await mongoose.disconnect();
-  await mongoServer.stop();
+  await sequelize.close();
 });
 
 beforeEach(async () => {
-  await User.deleteMany({});
-  await InvestmentRequest.deleteMany({});
-  await Task.deleteMany({});
-  await AuditLog.deleteMany({});
+  await Task.destroy({ where: {}, force: true });
+  await AuditLog.destroy({ where: {}, force: true });
+  await InvestmentRequest.destroy({ where: {}, force: true });
+  await User.destroy({ where: {}, force: true });
 });
 
 describe('Investment Portal API Tests', () => {
