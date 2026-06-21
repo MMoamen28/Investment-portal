@@ -39,6 +39,56 @@ const flowableService = {
     }
   },
 
+  deployDmnIfMissing: async () => {
+    try {
+      // Flowable-UI exposes DMN deployments at /dmn-api/dmn-repository/deployments
+      // but wait, the endpoint on Flowable UI might be /flowable-ui/dmn-api/dmn-repository/deployments
+      // The base URL is http://flowable:8080/flowable-ui/process-api, so we replace process-api with dmn-api
+      const DMN_BASE_URL = FLOWABLE_BASE_URL.replace('/process-api', '/dmn-api');
+      const { data: { data: deployments } } = await axios.get(`${DMN_BASE_URL}/dmn-repository/deployments`, { auth });
+      const exists = deployments.some(d => d.name === 'riskEvaluation');
+      
+      if (!exists) {
+        console.log('Deploying risk-evaluation.dmn to Flowable...');
+        const dmnPath = path.join(__dirname, '../risk-evaluation.dmn');
+        const formData = new FormData();
+        formData.append('file', fs.createReadStream(dmnPath), { filename: 'risk-evaluation.dmn' });
+        formData.append('name', 'riskEvaluation');
+
+        await axios.post(`${DMN_BASE_URL}/dmn-repository/deployments`, formData, {
+          auth,
+          headers: formData.getHeaders(),
+        });
+        console.log('Successfully deployed riskEvaluation DMN to Flowable.');
+      } else {
+        console.log('riskEvaluation DMN already deployed in Flowable.');
+      }
+    } catch (err) {
+      console.error('Failed to deploy Flowable DMN:', err.message);
+    }
+  },
+
+  evaluateRisk: async (amount) => {
+    const DMN_BASE_URL = FLOWABLE_BASE_URL.replace('/process-api', '/dmn-api');
+    const { data } = await axios.post(`${DMN_BASE_URL}/dmn-rule/execute`, {
+      decisionKey: 'riskEvaluation',
+      inputVariables: [
+        { name: 'amount', type: 'double', value: Number(amount) }
+      ]
+    }, { auth });
+    
+    // Process output variables
+    let riskLevel = 'HIGH';
+    let slaHours = 48;
+    if (data && data.resultVariables && data.resultVariables.length > 0) {
+      for (const resVar of data.resultVariables[0]) {
+        if (resVar.name === 'riskLevel') riskLevel = resVar.value;
+        if (resVar.name === 'slaHours') slaHours = resVar.value;
+      }
+    }
+    return { riskLevel, slaHours };
+  },
+
   startRegistration: async (investmentRequestId, registrationData) => {
     const variables = [
       { name: 'investmentRequestId', type: 'string', value: investmentRequestId },

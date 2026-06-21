@@ -11,12 +11,7 @@ const {
 } = require('../services/external.service');
 const { triggerFlowableRegistrationFlow } = require('../services/flowable-registration.service');
 
-/* ────────────────── Risk Evaluation (Drools-equivalent rule) ────────────────── */
-const getRisk = (amount) => {
-  if (amount < 500_000)  return { riskLevel: 'LOW',    slaHours: 0  };
-  if (amount < 5_000_000) return { riskLevel: 'MEDIUM', slaHours: 24 };
-  return                         { riskLevel: 'HIGH',   slaHours: 48 };
-};
+const flowableService = require('../services/flowable.service');
 
 /* ────────────────── Helper: push to JSONB array ────────────────── */
 const pushHistory = (request, entry) => {
@@ -115,7 +110,7 @@ const startInvestment = async (req, res) => {
     }
 
     const processInstanceId = `INV-${Date.now()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
-    const { riskLevel, slaHours } = getRisk(Number(investment.amount));
+    const { riskLevel, slaHours } = await flowableService.evaluateRisk(Number(investment.amount));
     const slaDeadline = slaHours > 0 ? new Date(Date.now() + slaHours * 3_600_000) : null;
     const isLow = riskLevel === 'LOW';
 
@@ -387,7 +382,7 @@ const completeData = async (req, res) => {
     }
 
     // 1. Re-evaluate risk (BPMN: Populate investment risk variable)
-    const { riskLevel, slaHours } = getRisk(Number(request.investment.amount));
+    const { riskLevel, slaHours } = await flowableService.evaluateRisk(Number(request.investment.amount));
     const slaDeadline = slaHours > 0 ? new Date(Date.now() + slaHours * 3_600_000) : null;
     const isLow = riskLevel === 'LOW';
 

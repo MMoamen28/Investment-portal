@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" id="definition_riskEvaluation" name="Risk Evaluation" namespace="http://www.flowable.org/dmn">
+  <decision id="riskEvaluation" name="Risk Evaluation">
+    <decisionTable id="decisionTable_riskEvaluation" hitPolicy="FIRST">
+      <input id="input_amount" label="Amount">
+        <inputExpression id="inputExpression_amount" typeRef="number">
+          <text>amount</text>
+        </inputExpression>
+      </input>
+      <output id="output_riskLevel" label="Risk Level" name="riskLevel" typeRef="string" />
+      <output id="output_slaHours" label="SLA Hours" name="slaHours" typeRef="number" />
+      <rule id="rule1">
+        <inputEntry id="inputEntry_rule1_1">
+          <text><![CDATA[< 500000]]></text>
+        </inputEntry>
+        <outputEntry id="outputEntry_rule1_1">
+          <text>"LOW"</text>
+        </outputEntry>
+        <outputEntry id="outputEntry_rule1_2">
+          <text>0</text>
+        </outputEntry>
+      </rule>
+      <rule id="rule2">
+        <inputEntry id="inputEntry_rule2_1">
+          <text><![CDATA[< 5000000]]></text>
+        </inputEntry>
+        <outputEntry id="outputEntry_rule2_1">
+          <text>"MEDIUM"</text>
+        </outputEntry>
+        <outputEntry id="outputEntry_rule2_2">
+          <text>24</text>
+        </outputEntry>
+      </rule>
+      <rule id="rule3">
+        <inputEntry id="inputEntry_rule3_1">
+          <text>-</text>
+        </inputEntry>
+        <outputEntry id="outputEntry_rule3_1">
+          <text>"HIGH"</text>
+        </outputEntry>
+        <outputEntry id="outputEntry_rule3_2">
+          <text>48</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+</definitions>

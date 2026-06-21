@@ -36,6 +36,14 @@ if (process.env.NODE_ENV !== 'test') {
     } catch (err) {
       console.warn('⚠️  Flowable unavailable:', err.message);
     }
+
+    try {
+      await flowableService.deployDmnIfMissing();
+      console.log('✅ Flowable DMN deployed/verified');
+    } catch (err) {
+      console.warn('⚠️  Flowable DMN unavailable:', err.message);
+    }
+
     app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
   })();
 }
